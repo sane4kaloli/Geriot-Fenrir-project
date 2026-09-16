@@ -1,0 +1,53 @@
+# Бинарники
+fenrir
+fenrir.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# БД
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Workspace (пользовательские файлы)
+workspace/
+!workspace/.gitkeep
+
+# Логи
+logs/
+*.log
+
+# Секреты
+.env
+.env.local
+*.key
+*.pem
+
+# Go
+*.test
+*.out
+/vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Отладочные скрипты
+check_*.go
+reset_*.go
+test_*.go
+clear_*.go
+
+# Backups
+*.bak
+*.backup

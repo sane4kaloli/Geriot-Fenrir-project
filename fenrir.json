@@ -1,0 +1,35 @@
+{
+  "gateway": {
+    "bind": "127.0.0.1",
+    "port": 18789,
+    "auth": {
+      "mode": "password",
+      "sessionTTL": "168h",
+      "users": {}
+    }
+  },
+  "webui": {
+    "enabled": true,
+    "sessionTTL": "168h",
+    "fileMaxBytes": 26214400,
+    "fileDenyPatterns": [".exe", ".dll", ".so"]
+  },
+  "database": {
+    "path": "./data/fenrir.db",
+    "maxConnections": 10
+  },
+  "models": {
+    "providers": {
+      "llama3.2": {
+        "type": "ollama",
+        "url": "http://localhost:11434",
+        "models": ["llama3.2:3b"]
+      }
+    },
+    "default": "llama3.2"
+  },
+  "agents": {
+    "workspace": "./workspace",
+    "main": "default"
+  }
+}
