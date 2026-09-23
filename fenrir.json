@@ -1,35 +1,68 @@
 {
-  "gateway": {
-    "bind": "127.0.0.1",
-    "port": 18789,
-    "auth": {
-      "mode": "password",
-      "sessionTTL": "168h",
-      "users": {}
-    }
-  },
-  "webui": {
-    "enabled": true,
-    "sessionTTL": "168h",
-    "fileMaxBytes": 26214400,
-    "fileDenyPatterns": [".exe", ".dll", ".so"]
-  },
-  "database": {
-    "path": "./data/fenrir.db",
-    "maxConnections": 10
-  },
-  "models": {
-    "providers": {
-      "llama3.2": {
-        "type": "ollama",
-        "url": "http://localhost:11434",
-        "models": ["llama3.2:3b"]
-      }
-    },
-    "default": "llama3.2"
-  },
-  "agents": {
-    "workspace": "./workspace",
-    "main": "default"
-  }
+    "gateway":  {
+                    "bind":  "127.0.0.1",
+                    "port":  18789,
+                    "auth":  {
+                                 "mode":  "password",
+                                 "sessionTTL":  "168h",
+                                 "users":  {
+
+                                           }
+                             }
+                },
+    "webui":  {
+                  "enabled":  true,
+                  "sessionTTL":  "168h",
+                  "fileMaxBytes":  26214400,
+                  "fileDenyPatterns":  [
+                                           ".exe",
+                                           ".dll",
+                                           ".so"
+                                       ]
+              },
+    "database":  {
+                     "path":  "./data/fenrir.db",
+                     "maxConnections":  10
+                 },
+    "models":  {
+                   "providers":  {
+                                     "ollama":  {
+                                                    "id":  "ollama",
+                                                    "name":  "Ollama (локально)",
+                                                    "type":  "ollama",
+                                                    "agents":  [
+                                                                   {
+                                                                       "id":  "default",
+                                                                       "name":  "Основной",
+                                                                       "isDefault":  true,
+                                                                       "description":  "Универсальный ассистент",
+                                                                       "model":  "llama3.2:3b",
+                                                                       "enabled":  true,
+                                                                       "prompt":  "Ты — полезный ассистент. Отвечай кратко и по делу."
+                                                                   },
+                                                                   {
+                                                                       "id":  "coder",
+                                                                       "name":  "Кодер",
+                                                                       "skills":  [
+                                                                                      "code"
+                                                                                  ],
+                                                                       "description":  "Помощник по программированию",
+                                                                       "model":  "llama3.2:3b",
+                                                                       "enabled":  true,
+                                                                       "prompt":  "Ты — опытный программист. Пиши чистый код с комментариями."
+                                                                   }
+                                                               ],
+                                                    "enabled":  true,
+                                                    "url":  "http://localhost:11434",
+                                                    "models":  [
+                                                                   "llama3.2:3b"
+                                                               ]
+                                                }
+                                 },
+                   "default":  "ollama"
+               },
+    "agents":  {
+                   "workspace":  "./workspace",
+                   "main":  "default"
+               }
 }

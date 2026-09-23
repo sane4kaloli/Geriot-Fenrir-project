@@ -1,4 +1,4 @@
-package webui
+﻿package webui
 
 import (
 	"embed"
@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"fenrir/internal/agents"
 	"fenrir/internal/config"
 	"fenrir/internal/db"
 	"fenrir/internal/webui/models"
@@ -21,23 +22,25 @@ import (
 //go:embed static/*
 var staticFS embed.FS
 
-// Server — HTTP-сервер Fenrir
+// Server вЂ” HTTP-СЃРµСЂРІРµСЂ Fenrir
 type Server struct {
 	config       *config.Config
 	db           *db.DB
 	modelService *models.Service
+	agentStore   *agents.Store
 }
 
-// NewServer — создаёт новый сервер
+// NewServer вЂ” СЃРѕР·РґР°С‘С‚ РЅРѕРІС‹Р№ СЃРµСЂРІРµСЂ
 func NewServer(cfg *config.Config, database *db.DB) *Server {
 	return &Server{
 		config:       cfg,
 		db:           database,
 		modelService: models.NewService(cfg),
+		agentStore:   agents.NewStore(cfg),
 	}
 }
 
-// Router — возвращает настроенный chi-роутер
+// Router вЂ” РІРѕР·РІСЂР°С‰Р°РµС‚ РЅР°СЃС‚СЂРѕРµРЅРЅС‹Р№ chi-СЂРѕСѓС‚РµСЂ
 func (s *Server) Router() *chi.Mux {
 	r := chi.NewRouter()
 
@@ -55,16 +58,16 @@ func (s *Server) Router() *chi.Mux {
 		MaxAge:           300,
 	}))
 
-	// Аутентификация
+	// РђСѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ
 	r.Use(s.AuthMiddleware)
 
-	// Статика
+	// РЎС‚Р°С‚РёРєР°
 	staticSub, _ := fs.Sub(staticFS, "static")
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(staticSub))))
 
 	// === API ===
 	r.Route("/api", func(r chi.Router) {
-		// === Мета / Auth ===
+		// === РњРµС‚Р° / Auth ===
 		r.Post("/register", s.handleRegister)
 		r.Post("/login", s.handleLogin)
 		r.Post("/logout", s.handleLogout)
@@ -72,7 +75,13 @@ func (s *Server) Router() *chi.Mux {
 		r.Get("/health", s.handleHealth)
 		r.Get("/models", s.handleListModels)
 
-		// === Файлы (upload / list / delete / raw) ===
+		// Провайдеры и агенты
+		r.Get("/providers", s.handleListProviders)
+		r.Get("/providers/{id}/agents", s.handleListProviderAgents)
+		r.Get("/agents", s.handleListAgents)
+		r.Get("/agents/{id}", s.handleGetAgent)
+
+		// === Р¤Р°Р№Р»С‹ (upload / list / delete / raw) ===
 		r.Route("/files", func(r chi.Router) {
 			r.Use(s.RequireAuth)
 			r.Post("/upload", s.handleUpload)
@@ -81,7 +90,7 @@ func (s *Server) Router() *chi.Mux {
 			r.Get("/raw", s.handleGetRawFile)
 		})
 
-		// === Workspace (просмотр) ===
+		// === Workspace (РїСЂРѕСЃРјРѕС‚СЂ) ===
 		r.Route("/workspace", func(r chi.Router) {
 			r.Use(s.RequireAuth)
 			r.Get("/", s.handleListWorkspace)
@@ -89,13 +98,13 @@ func (s *Server) Router() *chi.Mux {
 			r.Get("/download", s.handleWorkspaceDownload)
 		})
 
-		// === Чат ===
+		// === Р§Р°С‚ ===
 		r.Group(func(r chi.Router) {
 			r.Use(s.RequireAuth)
 			r.Post("/chat", s.handleChat)
 		})
 
-		// === Чаты (история) ===
+		// === Р§Р°С‚С‹ (РёСЃС‚РѕСЂРёСЏ) ===
 		r.Route("/chats", func(r chi.Router) {
 			r.Use(s.RequireAuth)
 			r.Get("/", s.handleListChats)
@@ -106,7 +115,7 @@ func (s *Server) Router() *chi.Mux {
 			r.Get("/{id}/messages", s.handleListMessages)
 		})
 
-		// === Пользователи (только admin) ===
+		// === РџРѕР»СЊР·РѕРІР°С‚РµР»Рё (С‚РѕР»СЊРєРѕ admin) ===
 		r.Route("/users", func(r chi.Router) {
 			r.Use(s.RequireAuth)
 			r.Use(s.RequireRole("admin"))
@@ -114,25 +123,25 @@ func (s *Server) Router() *chi.Mux {
 			r.Delete("/{id}", s.handleDeleteUser)
 		})
 
-		// === Админка ===
+		// === РђРґРјРёРЅРєР° ===
 		r.Route("/admin", func(r chi.Router) {
 			r.Use(s.RequireAuth)
 			r.Use(s.RequireRole("admin"))
 
-			// Скиллы
+			// РЎРєРёР»Р»С‹
 			r.Get("/skills", s.handleListSkills)
 			r.Post("/skills/{name}/enable", s.handleEnableSkill)
 			r.Post("/skills/{name}/disable", s.handleDisableSkill)
 			r.Post("/skills/reload", s.handleReloadSkills)
 
-			// Настройки
+			// РќР°СЃС‚СЂРѕР№РєРё
 			r.Get("/settings", s.handleListSettings)
 			r.Post("/settings", s.handleSetSetting)
 
-			// Аудит
+			// РђСѓРґРёС‚
 			r.Get("/audit", s.handleListAudit)
 
-			// Логи
+			// Р›РѕРіРё
 			r.Get("/logs/files", s.handleListLogs)
 			r.Get("/logs", s.handleGetLog)
 		})
@@ -159,11 +168,11 @@ func (s *Server) Router() *chi.Mux {
 		w.Write(index)
 	})
 
-	log.Println("✅ HTTP-роутер настроен")
+	log.Println("вњ… HTTP-СЂРѕСѓС‚РµСЂ РЅР°СЃС‚СЂРѕРµРЅ")
 	return r
 }
 
-// === Хелперы ===
+// === РҐРµР»РїРµСЂС‹ ===
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -179,7 +188,7 @@ func writeError(w http.ResponseWriter, status int, message string, hint string) 
 	})
 }
 
-// === Простые хендлеры ===
+// === РџСЂРѕСЃС‚С‹Рµ С…РµРЅРґР»РµСЂС‹ ===
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]interface{}{
@@ -194,3 +203,5 @@ func (s *Server) handleListModels(w http.ResponseWriter, r *http.Request) {
 		"default": s.config.Models.Default,
 	})
 }
+
+

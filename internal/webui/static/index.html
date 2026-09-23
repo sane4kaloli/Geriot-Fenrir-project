@@ -66,8 +66,12 @@ button{border:0;background:none;cursor:pointer}
 .chat{flex-direction:column;height:100%;overflow:hidden}
 .chat-head{height:66px;border-bottom:1px solid #24252b;display:flex;align-items:center;padding:0 26px;flex:none}
 .chat-title{font-size:13px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:500px}
-.chat-meta{font-size:10px;color:#6f727d;margin-top:4px}
+.chat-meta{font-size:10px;color:#6f727d;margin-top:4px;display:flex;align-items:center;gap:0}
 .status{margin-left:auto;font-size:9px;color:#9d61ff;background:#24183a;border-radius:12px;padding:5px 10px;font-weight:700}
+.model-select{padding:2px 8px;background:#17181d;border:1px solid #2a2b33;border-radius:6px;color:#c9cad0;font-size:10px;font-family:inherit;cursor:pointer;outline:none;transition:.15s;margin-right:6px;vertical-align:middle}
+.model-select:hover{border-color:#3a3b43;color:#eee}
+.model-select:focus{border-color:#8a4cf4;box-shadow:0 0 10px #8a4cf430}
+.model-select option{background:#17181d;color:#c9cad0}
 .more{width:29px;height:29px;margin-left:9px;border-radius:50%;background:#17181d;color:#7f828c;font-weight:800;letter-spacing:2px}
 .messages{flex:1;overflow-y:auto;overflow-x:hidden;padding:31px 0 24px;scroll-behavior:smooth;min-height:0}
 .messages-inner{width:min(720px,calc(100% - 50px));margin:0 auto;display:flex;flex-direction:column;gap:25px}
@@ -175,7 +179,6 @@ button{border:0;background:none;cursor:pointer}
 .skill-status-text.on{color:#a66bff;font-weight:600}
 .live-cursor{display:inline-block;color:#a66bff;animation:blink 1s infinite;font-weight:300;margin-left:1px}
 @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
-/* FILES */
 .files-layout{display:grid;grid-template-columns:320px 1fr;gap:18px;flex:1;min-height:0;margin-top:20px}
 .files-tree{background:#101115;border:1px solid #24252d;border-radius:12px;padding:14px;overflow-y:auto;display:flex;flex-direction:column}
 .files-tree-title{font-size:11px;color:#55586a;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
@@ -202,12 +205,12 @@ button{border:0;background:none;cursor:pointer}
 .files-info{padding:6px 16px;background:#0f1014;border-top:1px solid #24252d;font-size:10px;color:#55586a;font-family:monospace;display:flex;gap:16px}
 .files-empty{color:#55586a;font-size:12px;text-align:center;padding:60px 20px;font-family:inherit}
 @media(max-width:900px){:root{--sidebar:190px}.sidebar{padding-left:12px;padding-right:12px}.hero-title{font-size:60px}.composer,.chat-composer{width:620px}.messages-inner{width:min(720px,calc(100% - 32px))}.logs-layout{grid-template-columns:200px 1fr}.files-layout{grid-template-columns:220px 1fr}}
-@media(max-width:700px){.sidebar{position:fixed;z-index:20;left:-230px;top:0;width:230px;transition:left .2s;box-shadow:20px 0 50px #000b}.sidebar.open{left:0}.main{width:100%}.mobile-menu{display:grid;position:absolute;z-index:5;top:13px;left:13px;width:34px;height:34px;border-radius:9px;background:#17181d;border:1px solid #292b33;place-items:center;color:#bbb}.home{padding:0 15px 5vh}.hero{transform:translateY(-4vh)}.hero-title{font-size:48px;letter-spacing:-2px;margin-bottom:17px}.hero-sub{font-size:9px;margin-bottom:31px}.composer{width:100%;max-width:none;height:112px;border-radius:20px}.tools{margin-top:23px;gap:6px}.tool{font-size:10px;padding:0 9px}.chat-head{height:58px;padding:0 13px 0 57px}.chat-title{font-size:12px}.messages{padding:24px 0 16px}.messages-inner{width:calc(100% - 22px);gap:20px}.bubble,.ai-card{font-size:11px;max-width:82%}.chat-composer-wrap{padding:8px 0 16px}.chat-composer{max-width:calc(100% - 18px);height:105px}.chat-input{font-size:12px}.login-box{width:calc(100% - 32px);padding:32px 24px}.page{padding:68px 17px 30px}.page h1{font-size:22px}.users-table th,.users-table td{padding:10px 8px;font-size:11px}.logs-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}.logs-sidebar{max-height:200px}.skills-table th,.skills-table td{padding:12px 10px;font-size:11px}.files-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}.files-tree{max-height:200px}}
+@media(max-width:700px){.sidebar{position:fixed;z-index:20;left:-230px;top:0;width:230px;transition:left .2s;box-shadow:20px 0 50px #000b}.sidebar.open{left:0}.main{width:100%}.mobile-menu{display:grid;position:absolute;z-index:5;top:13px;left:13px;width:34px;height:34px;border-radius:9px;background:#17181d;border:1px solid #292b33;place-items:center;color:#bbb}.home{padding:0 15px 5vh}.hero{transform:translateY(-4vh)}.hero-title{font-size:48px;letter-spacing:-2px;margin-bottom:17px}.hero-sub{font-size:9px;margin-bottom:31px}.composer{width:100%;max-width:none;height:112px;border-radius:20px}.tools{margin-top:23px;gap:6px}.tool{font-size:10px;padding:0 9px}.chat-head{height:58px;padding:0 13px 0 57px}.chat-title{font-size:12px}.messages{padding:24px 0 16px}.messages-inner{width:calc(100% - 22px);gap:20px}.bubble,.ai-card{font-size:11px;max-width:82%}.chat-composer-wrap{padding:8px 0 16px}.chat-composer{max-width:calc(100% - 18px);height:105px}.chat-input{font-size:12px}.login-box{width:calc(100% - 32px);padding:32px 24px}.page{padding:68px 17px 30px}.page h1{font-size:22px}.users-table th,.users-table td{padding:10px 8px;font-size:11px}.logs-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}.logs-sidebar{max-height:200px}.skills-table th,.skills-table td{padding:12px 10px;font-size:11px}.files-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}.files-tree{max-height:200px}.model-select{font-size:10px;padding:3px 6px}}
 </style>
 </head>
 <body>
 
-<!-- ====== ЭКРАН ЛОГИНА / РЕГИСТРАЦИИ ====== -->
+<!-- ЭКРАН ЛОГИНА -->
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
@@ -260,6 +263,7 @@ button{border:0;background:none;cursor:pointer}
   <main class="main">
     <button class="mobile-menu" id="mobileMenu">☰</button>
 
+    <!-- ГЛАВНАЯ -->
     <section class="view home" id="home">
       <div class="hero">
         <h1 class="hero-title">FENRIR</h1>
@@ -285,11 +289,21 @@ button{border:0;background:none;cursor:pointer}
       <div class="footer">GERIOT LLC. • Конфиденциальность гарантирована сквозным шифрованием</div>
     </section>
 
+    <!-- ЧАТ -->
     <section class="view chat" id="chat">
       <header class="chat-head">
-        <div><div class="chat-title" id="chatName">Новый чат</div><div class="chat-meta" id="chatMeta">В диалоге с Fenrir AI • Режим «Быстрый»</div></div>
-        <span class="status">АКТИВЕН</span><button class="more">•••</button>
-      </header>
+  <div>
+    <div class="chat-title" id="chatName">Новый чат</div>
+    <div class="chat-meta">
+      <select class="model-select" id="modelSelect">
+        <option value="llama3.2">llama3.2</option>
+      </select>
+      <span id="chatMeta">Режим «Быстрый»</span>
+    </div>
+  </div>
+  <span class="status">АКТИВЕН</span>
+  <button class="more">•••</button>
+</header>
 
       <div class="chat-empty" id="chatEmpty">
         <h1 class="hero-title">FENRIR</h1>
@@ -306,7 +320,6 @@ button{border:0;background:none;cursor:pointer}
               <button data-agent="reasoning">Рассуждение</button>
             </div>
             <div class="composer-actions">
-              <span class="mic">♩</span>
               <button class="send" id="chatNewSend"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6"/></svg></button>
             </div>
           </div>
@@ -349,6 +362,7 @@ button{border:0;background:none;cursor:pointer}
       </div>
     </section>
 
+    <!-- ФАЙЛЫ -->
     <section class="view page" id="filesPage">
       <h1>Файлы</h1>
       <p>Просмотр файлов workspace</p>
@@ -375,6 +389,7 @@ button{border:0;background:none;cursor:pointer}
       </div>
     </section>
 
+    <!-- СКИЛЛЫ -->
     <section class="view page" id="skillsPage">
       <h1>Скиллы</h1>
       <p>Управление возможностями агента</p>
@@ -396,6 +411,7 @@ button{border:0;background:none;cursor:pointer}
       </div>
     </section>
 
+    <!-- ПОЛЬЗОВАТЕЛИ -->
     <section class="view page" id="usersPage">
       <h1>Пользователи</h1>
       <p>Управление пользователями системы</p>
@@ -413,6 +429,7 @@ button{border:0;background:none;cursor:pointer}
       </table>
     </section>
 
+    <!-- ЛОГИ -->
     <section class="view page" id="logsPage">
       <h1>Логи</h1>
       <p>Просмотр системных логов</p>
@@ -449,7 +466,7 @@ button{border:0;background:none;cursor:pointer}
 <input type="file" id="fileInput" style="display:none" accept=".txt,.md,.json,.yaml,.yml,.toml,.ini,.cfg,.csv,.tsv,.log,.xml,.html,.css,.scss,.js,.mjs,.ts,.tsx,.jsx,.vue,.svelte,.go,.rs,.py,.rb,.php,.java,.kt,.scala,.c,.h,.cpp,.hpp,.cs,.swift,.lua,.r,.jl,.sh,.bash,.zsh,.fish,.ps1,.bat,.cmd,.sql,.svg,.diff,.patch,.srt,.vtt,.ipynb,.tex,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.tif,.ico,.heic,.heif,.avif">
 
 <script>
-const State={chats:[],currentChatId:null,currentMode:'chat',currentAgent:'fast',currentModel:'llama3.2',attachedFiles:[],currentUser:null,currentLogFile:null,skills:[],currentFilePath:null,currentFileDir:null,expandedDirs:{}};
+const State={chats:[],currentChatId:null,currentMode:'chat',currentAgent:'fast',currentModel:'llama3.2',attachedFiles:[],currentUser:null,currentLogFile:null,skills:[],currentFilePath:null,expandedDirs:{}};
 const IMG_EXTS=['jpg','jpeg','png','gif','webp','bmp','tiff','tif','ico','heic','heif','avif'];
 function isImage(name){const e=(name||'').split('.').pop().toLowerCase();return IMG_EXTS.indexOf(e)>=0;}
 
@@ -487,7 +504,8 @@ const API={
   disableSkill(name){return this.req('/api/admin/skills/'+encodeURIComponent(name)+'/disable',{method:'POST'});},
   reloadSkills(){return this.req('/api/admin/skills/reload',{method:'POST'});},
   listWorkspace(path){return this.req('/api/workspace'+(path?'?path='+encodeURIComponent(path):''));},
-  getWorkspaceFile(path){return this.req('/api/workspace/file?path='+encodeURIComponent(path));}
+  getWorkspaceFile(path){return this.req('/api/workspace/file?path='+encodeURIComponent(path));},
+  listModels(){return this.req('/api/models');}
 };
 
 const loginScreen=document.getElementById('loginScreen');
@@ -531,7 +549,7 @@ async function doAuth(){
     const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({login,password})});
     const data=await r.json();
     if(r.ok&&data.ok){
-      State.currentUser=data;hideLogin();passwordInput.value='';confirmInput.value='';applyUserUI();ws.connect();await loadChats();State.currentChatId=null;showChatEmpty();showView('chat');
+      State.currentUser=data;hideLogin();passwordInput.value='';confirmInput.value='';applyUserUI();ws.connect();await loadChats();await loadModels();State.currentChatId=null;showChatEmpty();showView('chat');
     }else{loginError.textContent=data.message||'Ошибка';loginError.style.display='block';}
   }catch(e){loginError.textContent='Ошибка соединения с сервером';loginError.style.display='block';}
   loginBtn.disabled=false;loginBtn.textContent=oldText;
@@ -558,6 +576,25 @@ document.getElementById('navLogs').addEventListener('click',()=>{loadLogs();show
 document.getElementById('navSkills').addEventListener('click',()=>{loadSkills();showView('skillsPage');});
 document.getElementById('navFiles').addEventListener('click',()=>{loadFilesRoot();showView('filesPage');});
 
+async function loadModels(){
+  try{
+    const data=await API.listModels();
+    if(data.models&&data.models.length){
+      const select=document.getElementById('modelSelect');
+      select.innerHTML=data.models.map(m=>`<option value="${m}">${m}</option>`).join('');
+      select.value=data.default||data.models[0];
+      State.currentModel=data.default||data.models[0];
+      console.log('✅ Модели загружены:',data.models);
+    }
+  }catch(e){
+    console.log('⚠️ Модели не загружены, используется дефолт:',State.currentModel);
+  }
+}
+document.getElementById('modelSelect').addEventListener('change',(e)=>{
+  State.currentModel=e.target.value;
+  console.log('🔄 Модель изменена:',State.currentModel);
+});
+
 async function loadChats(){try{const d=await API.listChats();State.chats=d.chats||[];renderChatList();}catch(e){console.error('Ошибка загрузки чатов:',e);}}
 function renderChatList(){
   if(!State.chats.length){chatListEl.innerHTML='<div class="empty-chats">Пока нет чатов.<br>Начните новый диалог ✨</div>';return;}
@@ -581,7 +618,7 @@ async function openChat(id){
   State.currentChatId=id;
   const chat=State.chats.find(c=>c.id===id);if(!chat)return;
   document.getElementById('chatName').textContent=chat.title||'Новый чат';
-  document.getElementById('chatMeta').textContent='В диалоге с Fenrir AI • Режим «Быстрый»';
+  document.getElementById('chatMeta').textContent='Режим «Быстрый»';
   const inner=document.getElementById('messagesInner');inner.innerHTML='';
   try{const data=await API.getMessages(id);(data.messages||[]).forEach(m=>{if(m.role==='user')addUserMessage(m.content);else addAIMessage(m.content);});}catch(e){console.error('Ошибка загрузки истории:',e);}
   State.attachedFiles=[];renderAttached();
@@ -601,7 +638,20 @@ document.querySelectorAll('.tool').forEach(t=>{t.addEventListener('click',()=>{c
 const fileInput=document.getElementById('fileInput');
 let uploadTargetInput=null;
 document.querySelectorAll('.circle-plus').forEach(btn=>{btn.addEventListener('click',()=>{uploadTargetInput=btn.dataset.target;fileInput.value='';fileInput.click();});});
-fileInput.addEventListener('change',async()=>{const f=fileInput.files[0];if(!f)return;const list=document.getElementById(uploadTargetInput==='homeInput'?'homeAttach':(uploadTargetInput==='chatNewInput'?'chatNewAttach':'chatAttach'));if(list){const ind=document.createElement('div');ind.className='uploading';ind.textContent='⏳ Загрузка '+f.name+'...';list.appendChild(ind);}try{const r=await API.uploadFile(f);State.attachedFiles.push({path:r.path,name:r.name,size:r.size,isImage:isImage(r.name)});renderAttached();}catch(err){alert('Ошибка загрузки: '+err.message);renderAttached();}});
+fileInput.addEventListener('change',async function(){
+  const f=this.files[0];if(!f)return;
+  const list=document.getElementById(uploadTargetInput==='homeInput'?'homeAttach':(uploadTargetInput==='chatNewInput'?'chatNewAttach':'chatAttach'));
+  let ind=null;
+  if(list){ind=document.createElement('div');ind.className='uploading';ind.textContent='⏳ Загрузка '+f.name+'...';list.appendChild(ind);}
+  try{
+    const r=await API.uploadFile(f);
+    if(r&&r.ok){
+      State.attachedFiles.push({path:r.path,name:r.name,size:r.size,isImage:isImage(r.name)});
+    }
+  }catch(err){alert('Ошибка загрузки: '+err.message);}
+  if(ind)ind.remove();
+  renderAttached();
+});
 function renderAttached(){['homeAttach','chatNewAttach','chatAttach'].forEach(id=>{const el=document.getElementById(id);if(!el)return;if(!State.attachedFiles.length){el.innerHTML='';return;}el.innerHTML=State.attachedFiles.map((f,i)=>{const kb=(f.size/1024).toFixed(1);const thumb=f.isImage?'<img class="thumb" src="/api/files/raw?path='+encodeURIComponent(f.path)+'" alt="" onerror="this.style.display=\'none\'">':'<span>📎</span>';return '<div class="attach-chip">'+thumb+'<span class="name">'+escapeHtml(f.name)+' ('+kb+' КБ)</span><span class="rm" data-idx="'+i+'">✕</span></div>';}).join('');el.querySelectorAll('.rm').forEach(r=>{r.addEventListener('click',()=>{State.attachedFiles.splice(parseInt(r.dataset.idx),1);renderAttached();});});});}
 
 async function sendInChat(text){
@@ -612,10 +662,8 @@ async function sendInChat(text){
     catch(e){addAIMessage('❌ Ошибка создания чата: '+e.message);return;}
   }
   const files=State.attachedFiles.map(f=>f.path);
-
-  if(State.currentAgent==='reasoning'){
-    sendViaWebSocket(text,files);
-  }else{
+  if(State.currentAgent==='reasoning'){sendViaWebSocket(text,files);}
+  else{
     const typingId=showTyping();
     try{
       const response=await API.sendChat(text,State.currentMode,State.currentAgent,State.currentModel,State.currentChatId,files);
@@ -629,7 +677,6 @@ async function sendInChat(text){
 
 function sendViaWebSocket(text,files){
   if(!ws.connected){
-    console.log('WS не подключён, fallback на REST');
     (async()=>{
       const typingId=showTyping();
       try{
@@ -640,10 +687,8 @@ function sendViaWebSocket(text,files){
     })();
     return;
   }
-
   const liveRow=addLiveMessage('');
   let fullText='';
-
   ws.on('chat.delta',(data)=>{fullText+=data.delta||'';updateLiveMessage(liveRow,fullText);});
   ws.on('chat.done',async(data)=>{
     finalizeLiveMessage(liveRow,data.fullContent||fullText);
@@ -656,7 +701,6 @@ function sendViaWebSocket(text,files){
     finalizeLiveMessage(liveRow,'❌ Ошибка: '+(data.error||'неизвестная'));
     ws.handlers['chat.delta']=null;ws.handlers['chat.done']=null;ws.handlers['chat.error']=null;
   });
-
   ws.send({type:'chat',message:text,mode:State.currentMode,agentMode:State.currentAgent,model:State.currentModel,chatId:State.currentChatId,files:files||[]});
 }
 
@@ -745,7 +789,6 @@ function renderSkills(){
 }
 document.getElementById('skillsReload').addEventListener('click',async()=>{try{const r=await API.reloadSkills();alert('Загружено скиллов: '+(r.loaded||0));await loadSkills();}catch(e){alert('Ошибка: '+e.message);}});
 
-// ===== ФАЙЛЫ =====
 async function loadFilesRoot(){
   document.getElementById('filesTree').innerHTML='<div style="color:#55586a;font-size:11px;padding:8px;">⏳ Загрузка...</div>';
   try{
@@ -758,36 +801,25 @@ async function loadFilesRoot(){
 function renderTree(items, containerId, level){
   const container=document.getElementById(containerId);
   if(!container)return;
-  if(!items.length){
-    container.innerHTML='<div style="color:#55586a;font-size:11px;padding:8px;">Папка пуста</div>';
-    return;
-  }
+  if(!items.length){container.innerHTML='<div style="color:#55586a;font-size:11px;padding:8px;">Папка пуста</div>';return;}
   container.innerHTML=items.map(item=>{
     const ico=item.isDir?(State.expandedDirs[item.path]?'📂':'📁'):(isImage(item.name)?'🖼️':'📄');
     const size=item.isDir?'':(item.size>1024?(item.size/1024).toFixed(1)+' КБ':item.size+' б');
     const arrow=item.isDir?'<span class="arrow">'+(State.expandedDirs[item.path]?'▼':'▶')+'</span>':'<span class="arrow"></span>';
     let html='<div class="tree-item '+(State.currentFilePath===item.path?'active':'')+'" data-path="'+escapeHtml(item.path)+'" data-dir="'+item.isDir+'">'+arrow+'<span class="ico">'+ico+'</span><span class="nm">'+escapeHtml(item.name)+'</span><span class="sz">'+size+'</span></div>';
-    if(item.isDir){
-      html+='<div class="tree-children '+(State.expandedDirs[item.path]?'open':'')+'" id="tree-'+escapeHtml(item.path).replace(/[^a-zA-Z0-9]/g,'_')+'"></div>';
-    }
+    if(item.isDir){html+='<div class="tree-children '+(State.expandedDirs[item.path]?'open':'')+'" id="tree-'+escapeHtml(item.path).replace(/[^a-zA-Z0-9]/g,'_')+'"></div>';}
     return html;
   }).join('');
   container.querySelectorAll('.tree-item').forEach(el=>{
     el.addEventListener('click',async(e)=>{
       e.stopPropagation();
-      const path=el.dataset.path;
-      const isDir=el.dataset.dir==='true';
+      const path=el.dataset.path;const isDir=el.dataset.dir==='true';
       if(isDir){
         State.expandedDirs[path]=!State.expandedDirs[path];
         if(State.expandedDirs[path]){
-          try{
-            const data=await API.listWorkspace(path);
-            const subId='tree-'+path.replace(/[^a-zA-Z0-9]/g,'_');
-            renderTree(data.items||[], subId, level+1);
-          }catch(err){console.error(err);}
+          try{const data=await API.listWorkspace(path);const subId='tree-'+path.replace(/[^a-zA-Z0-9]/g,'_');renderTree(data.items||[], subId, level+1);}catch(err){console.error(err);}
         }
-        const arrow=el.querySelector('.arrow');
-        const ico=el.querySelector('.ico');
+        const arrow=el.querySelector('.arrow');const ico=el.querySelector('.ico');
         if(arrow)arrow.textContent=State.expandedDirs[path]?'▼':'▶';
         if(ico)ico.textContent=State.expandedDirs[path]?'📂':'📁';
         const sub=document.getElementById('tree-'+path.replace(/[^a-zA-Z0-9]/g,'_'));
@@ -812,32 +844,20 @@ async function loadFileContent(path){
   dl.dataset.path=path;
   try{
     const data=await API.getWorkspaceFile(path);
-    if(data.binary){
-      body.textContent=data.text;
-      body.style.color='#e0b050';
-    }else{
-      body.textContent=data.text;
-      body.style.color='#c9cad0';
-    }
+    if(data.binary){body.textContent=data.text;body.style.color='#e0b050';}
+    else{body.textContent=data.text;body.style.color='#c9cad0';}
     info.textContent='Размер: '+data.size+' б'+(data.modified?' | Изменён: '+data.modified:'');
-  }catch(e){
-    body.textContent='Ошибка: '+e.message;
-    body.style.color='#ff5a5a';
-    info.textContent='';
-  }
+  }catch(e){body.textContent='Ошибка: '+e.message;body.style.color='#ff5a5a';info.textContent='';}
 }
 document.getElementById('filesRefresh').addEventListener('click',loadFilesRoot);
-document.getElementById('filesDownload').addEventListener('click',()=>{
-  const path=document.getElementById('filesDownload').dataset.path;
-  if(!path)return;
-  window.open('/api/workspace/download?path='+encodeURIComponent(path), '_blank');
-});
+document.getElementById('filesDownload').addEventListener('click',()=>{const path=document.getElementById('filesDownload').dataset.path;if(!path)return;window.open('/api/workspace/download?path='+encodeURIComponent(path), '_blank');});
 
 (async()=>{
   const authed=await checkAuth();
   if(authed){
     ws.connect();
     await loadChats();
+    await loadModels();
     State.currentChatId=null;
     showChatEmpty();
     showView('chat');

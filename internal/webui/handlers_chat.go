@@ -1,20 +1,19 @@
-package webui
+﻿package webui
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"fenrir/internal/db"
 	"fenrir/internal/webui/modes"
-	"fenrir/internal/webui/prompts"
 
 	"github.com/go-chi/chi/v5"
 )
-
-// ChatRequest — запрос к чату
+// ChatRequest вЂ” Р·Р°РїСЂРѕСЃ Рє С‡Р°С‚Сѓ
 type ChatRequest struct {
 	Message   string   `json:"message"`
 	Mode      string   `json:"mode"`
@@ -24,7 +23,7 @@ type ChatRequest struct {
 	Files     []string `json:"files,omitempty"`
 }
 
-// ChatResponse — ответ чата
+// ChatResponse вЂ” РѕС‚РІРµС‚ С‡Р°С‚Р°
 type ChatResponse struct {
 	Type    string      `json:"type"`
 	Content interface{} `json:"content"`
@@ -32,11 +31,11 @@ type ChatResponse struct {
 	Model   string      `json:"model"`
 }
 
-// handleChat — POST /api/chat
+// handleChat вЂ” POST /api/chat
 func (s *Server) handleChat(w http.ResponseWriter, r *http.Request) {
 	var req ChatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "Неверный запрос", err.Error())
+		writeError(w, http.StatusBadRequest, "РќРµРІРµСЂРЅС‹Р№ Р·Р°РїСЂРѕСЃ", err.Error())
 		return
 	}
 
@@ -47,38 +46,60 @@ func (s *Server) handleChat(w http.ResponseWriter, r *http.Request) {
 
 	model, err := s.modelService.GetModel(modelName)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "Модель не найдена", err.Error())
+		writeError(w, http.StatusNotFound, "РњРѕРґРµР»СЊ РЅРµ РЅР°Р№РґРµРЅР°", err.Error())
 		return
 	}
-
 	user := GetUserFromContext(r.Context())
 	username := "anonymous"
 	if user != nil {
 		username = user.Login
 	}
 
-	agentMode := req.AgentMode
-	if agentMode == "" {
-		agentMode = "fast"
+	// 🆕 Получаем агента из store
+	agentID := req.AgentMode
+	if agentID == "" {
+		agentID = "default"
 	}
 
-	// === Чтение прикреплённых файлов ===
+	agentInfo, agentCfg, err := s.agentStore.GetAgent(agentID)
+	if err != nil {
+		agentInfo, agentCfg, _ = s.agentStore.GetAgent("default")
+	}
+
+	if agentCfg != nil && agentCfg.Model != "" {
+		modelName = agentCfg.Model
+		model, err = s.modelService.GetModel(modelName)
+		if err != nil {
+			writeError(w, http.StatusNotFound, "Модель агента не найдена", err.Error())
+			return
+		}
+	}
+
+	agentPrompt := "Ты — полезный ассистент."
+	if agentCfg != nil && agentCfg.Prompt != "" {
+		agentPrompt = agentCfg.Prompt
+	}
+	_ = agentInfo
+
+	log.Printf("💬 Chat request: user=%s agent=%s model=%s", username, agentID, modelName)
+
+	// === Р§С‚РµРЅРёРµ РїСЂРёРєСЂРµРїР»С‘РЅРЅС‹С… С„Р°Р№Р»РѕРІ ===
 	var filesContext string
 	if len(req.Files) > 0 {
 		var sb strings.Builder
-		sb.WriteString("\n\n=== КОНТЕКСТ ИЗ ЗАГРУЖЕННЫХ ФАЙЛОВ ===\n")
+		sb.WriteString("\n\n=== РљРћРќРўР•РљРЎРў РР— Р—РђР“Р РЈР–Р•РќРќР«РҐ Р¤РђР™Р›РћР’ ===\n")
 		for _, f := range req.Files {
 			content, err := s.readFileContent(f)
 			if err != nil {
-				sb.WriteString(fmt.Sprintf("\n--- Файл %s: ошибка чтения (%v) ---\n", f, err))
+				sb.WriteString(fmt.Sprintf("\n--- Р¤Р°Р№Р» %s: РѕС€РёР±РєР° С‡С‚РµРЅРёСЏ (%v) ---\n", f, err))
 				continue
 			}
 			if len(content) > 100000 {
-				content = content[:100000] + "\n...[обрезано]"
+				content = content[:100000] + "\n...[РѕР±СЂРµР·Р°РЅРѕ]"
 			}
-			sb.WriteString(fmt.Sprintf("\n--- Файл: %s ---\n%s\n", f, content))
+			sb.WriteString(fmt.Sprintf("\n--- Р¤Р°Р№Р»: %s ---\n%s\n", f, content))
 		}
-		sb.WriteString("\n=== КОНЕЦ КОНТЕКСТА ===\n\n")
+		sb.WriteString("\n=== РљРћРќР•Р¦ РљРћРќРўР•РљРЎРўРђ ===\n\n")
 		filesContext = sb.String()
 	}
 
@@ -91,25 +112,25 @@ func (s *Server) handleChat(w http.ResponseWriter, r *http.Request) {
 
 	switch req.Mode {
 	case "slides":
-		prompt = prompts.Slides(req.Message+filesContext, agentMode, username)
+		prompt = agentPrompt + "\n\n" + req.Message + filesContext
 		responseType = "slides"
 		raw := model.Generate(prompt)
 		parsedResponse, parseErr = modes.ParseSlides(raw)
 
 	case "tables":
-		prompt = prompts.Tables(req.Message+filesContext, agentMode, username)
+		prompt = agentPrompt + "\n\n" + req.Message + filesContext
 		responseType = "table"
 		raw := model.Generate(prompt)
 		parsedResponse, parseErr = modes.ParseTable(raw)
 
 	case "research":
-		prompt = prompts.Research(req.Message+filesContext, agentMode, username)
+		prompt = agentPrompt + "\n\n" + req.Message + filesContext
 		responseType = "research"
 		raw := model.Generate(prompt)
 		parsedResponse = modes.ParseResearch(raw)
 
 	default:
-		prompt = prompts.Chat(req.Message+filesContext, agentMode, username)
+		prompt = agentPrompt + "\n\nПользователь: " + req.Message + filesContext
 		responseType = "text"
 		raw := model.Generate(prompt)
 		parsedResponse = modes.ParseText(raw, nil)
@@ -118,11 +139,11 @@ func (s *Server) handleChat(w http.ResponseWriter, r *http.Request) {
 	duration := time.Since(start)
 
 	if parseErr != nil {
-		writeError(w, http.StatusInternalServerError, "Ошибка обработки ответа", parseErr.Error())
+		writeError(w, http.StatusInternalServerError, "РћС€РёР±РєР° РѕР±СЂР°Р±РѕС‚РєРё РѕС‚РІРµС‚Р°", parseErr.Error())
 		return
 	}
 
-	// === Сохраняем в БД ===
+	// === РЎРѕС…СЂР°РЅСЏРµРј РІ Р‘Р” ===
 	if req.ChatID != "" {
 		msgs, _ := s.db.ListMessages(req.ChatID, 1)
 		isFirst := len(msgs) == 0
@@ -146,7 +167,7 @@ func (s *Server) handleChat(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleListChats — GET /api/chats
+// handleListChats вЂ” GET /api/chats
 func (s *Server) handleListChats(w http.ResponseWriter, r *http.Request) {
 	user := GetUserFromContext(r.Context())
 
@@ -162,7 +183,7 @@ func (s *Server) handleListChats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "Ошибка получения чатов", err.Error())
+		writeError(w, http.StatusInternalServerError, "РћС€РёР±РєР° РїРѕР»СѓС‡РµРЅРёСЏ С‡Р°С‚РѕРІ", err.Error())
 		return
 	}
 
@@ -173,7 +194,7 @@ func (s *Server) handleListChats(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]interface{}{"chats": chats})
 }
 
-// handleCreateChat — POST /api/chats
+// handleCreateChat вЂ” POST /api/chats
 func (s *Server) handleCreateChat(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Title string `json:"title"`
@@ -181,7 +202,7 @@ func (s *Server) handleCreateChat(w http.ResponseWriter, r *http.Request) {
 		Mode  string `json:"mode"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "Неверный запрос", err.Error())
+		writeError(w, http.StatusBadRequest, "РќРµРІРµСЂРЅС‹Р№ Р·Р°РїСЂРѕСЃ", err.Error())
 		return
 	}
 
@@ -194,7 +215,7 @@ func (s *Server) handleCreateChat(w http.ResponseWriter, r *http.Request) {
 	id := fmt.Sprintf("chat-%d-%d", userID, time.Now().UnixNano())
 
 	if req.Title == "" {
-		req.Title = "Новый чат"
+		req.Title = "РќРѕРІС‹Р№ С‡Р°С‚"
 	}
 	if req.Model == "" {
 		req.Model = s.config.Models.Default
@@ -205,27 +226,27 @@ func (s *Server) handleCreateChat(w http.ResponseWriter, r *http.Request) {
 
 	chat, err := s.db.CreateChat(id, userID, req.Title, req.Model, req.Mode)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "Ошибка создания чата", err.Error())
+		writeError(w, http.StatusInternalServerError, "РћС€РёР±РєР° СЃРѕР·РґР°РЅРёСЏ С‡Р°С‚Р°", err.Error())
 		return
 	}
 
 	writeJSON(w, http.StatusOK, chat)
 }
 
-// handleGetChat — GET /api/chats/{id}
+// handleGetChat вЂ” GET /api/chats/{id}
 func (s *Server) handleGetChat(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	chat, err := s.db.GetChat(id)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "Чат не найден", err.Error())
+		writeError(w, http.StatusNotFound, "Р§Р°С‚ РЅРµ РЅР°Р№РґРµРЅ", err.Error())
 		return
 	}
 
 	writeJSON(w, http.StatusOK, chat)
 }
 
-// handleUpdateChat — PATCH /api/chats/{id}
+// handleUpdateChat вЂ” PATCH /api/chats/{id}
 func (s *Server) handleUpdateChat(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
@@ -233,17 +254,17 @@ func (s *Server) handleUpdateChat(w http.ResponseWriter, r *http.Request) {
 		Title string `json:"title"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "Неверный запрос", err.Error())
+		writeError(w, http.StatusBadRequest, "РќРµРІРµСЂРЅС‹Р№ Р·Р°РїСЂРѕСЃ", err.Error())
 		return
 	}
 
 	if req.Title == "" {
-		writeError(w, http.StatusBadRequest, "Название не указано", "")
+		writeError(w, http.StatusBadRequest, "РќР°Р·РІР°РЅРёРµ РЅРµ СѓРєР°Р·Р°РЅРѕ", "")
 		return
 	}
 
 	if err := s.db.UpdateChatTitle(id, req.Title); err != nil {
-		writeError(w, http.StatusInternalServerError, "Ошибка обновления", err.Error())
+		writeError(w, http.StatusInternalServerError, "РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ", err.Error())
 		return
 	}
 
@@ -251,25 +272,25 @@ func (s *Server) handleUpdateChat(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, chat)
 }
 
-// handleDeleteChat — DELETE /api/chats/{id}
+// handleDeleteChat вЂ” DELETE /api/chats/{id}
 func (s *Server) handleDeleteChat(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	if err := s.db.DeleteChat(id); err != nil {
-		writeError(w, http.StatusInternalServerError, "Ошибка удаления", err.Error())
+		writeError(w, http.StatusInternalServerError, "РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ", err.Error())
 		return
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{"ok": true})
 }
 
-// handleListMessages — GET /api/chats/{id}/messages
+// handleListMessages вЂ” GET /api/chats/{id}/messages
 func (s *Server) handleListMessages(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	messages, err := s.db.ListMessages(id, 100)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "Ошибка получения сообщений", err.Error())
+		writeError(w, http.StatusInternalServerError, "РћС€РёР±РєР° РїРѕР»СѓС‡РµРЅРёСЏ СЃРѕРѕР±С‰РµРЅРёР№", err.Error())
 		return
 	}
 
@@ -280,7 +301,7 @@ func (s *Server) handleListMessages(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]interface{}{"messages": messages})
 }
 
-// generateTitle — создаёт краткое название чата из первого сообщения
+// generateTitle вЂ” СЃРѕР·РґР°С‘С‚ РєСЂР°С‚РєРѕРµ РЅР°Р·РІР°РЅРёРµ С‡Р°С‚Р° РёР· РїРµСЂРІРѕРіРѕ СЃРѕРѕР±С‰РµРЅРёСЏ
 func generateTitle(text string) string {
 	text = strings.TrimSpace(text)
 	runes := []rune(text)
@@ -288,7 +309,7 @@ func generateTitle(text string) string {
 		return string(runes[:60]) + "..."
 	}
 	if len(runes) == 0 {
-		return "Новый чат"
+		return "РќРѕРІС‹Р№ С‡Р°С‚"
 	}
 	return text
 }

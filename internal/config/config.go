@@ -53,11 +53,28 @@ type ModelsConfig struct {
 }
 
 type ProviderConfig struct {
-    Type   string                 `json:"type"`
-    URL    string                 `json:"url,omitempty"`
-    APIKey string                 `json:"apiKey,omitempty"`
-    Models []string               `json:"models"`
-    Params map[string]interface{} `json:"params,omitempty"`
+    ID      string                 `json:"id"`
+    Name    string                 `json:"name"`
+    Type    string                 `json:"type"`
+    URL     string                 `json:"url,omitempty"`
+    APIKey  string                 `json:"apiKey,omitempty"`
+    Models  []string               `json:"models"`
+    Agents  []AgentConfig          `json:"agents"`
+    Params  map[string]interface{} `json:"params,omitempty"`
+    Enabled bool                   `json:"enabled"`
+}
+
+type AgentConfig struct {
+    ID          string   `json:"id"`
+    Name        string   `json:"name"`
+    Description string   `json:"description,omitempty"`
+    Model       string   `json:"model"`
+    Prompt      string   `json:"prompt"`
+    Skills      []string `json:"skills,omitempty"`
+    Temperature float64  `json:"temperature,omitempty"`
+    MaxTokens   int      `json:"maxTokens,omitempty"`
+    Enabled     bool     `json:"enabled"`
+    IsDefault   bool     `json:"isDefault,omitempty"`
 }
 
 type AgentsConfig struct {
@@ -112,3 +129,6 @@ func (c *Config) GetSessionTTL() time.Duration {
     }
     return d
 }
+
+
+
